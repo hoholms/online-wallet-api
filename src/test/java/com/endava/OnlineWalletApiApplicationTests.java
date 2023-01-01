@@ -1,4 +1,4 @@
-package com.hoholms.onlinewalletapi;
+package com.endava;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
