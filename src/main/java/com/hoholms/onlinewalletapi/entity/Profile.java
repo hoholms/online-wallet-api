@@ -1,5 +1,6 @@
 package com.hoholms.onlinewalletapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,9 +10,10 @@ import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "profiles")
@@ -51,6 +53,7 @@ public class Profile {
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private User user;
 
     @Column(name = "activation_code")
@@ -61,7 +64,8 @@ public class Profile {
 
     @OneToMany(mappedBy = "profile")
     @ToString.Exclude
-    private Set<Transaction> transactions = new LinkedHashSet<>();
+    @JsonIgnore
+    private List<Transaction> transactions = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

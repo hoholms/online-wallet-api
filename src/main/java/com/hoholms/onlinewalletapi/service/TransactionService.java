@@ -14,12 +14,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -89,23 +88,26 @@ public class TransactionService {
             LocalDate from,
             LocalDate to
     ) {
-        String maxTranCategory = transactionRepository.findMaxCategoryDateBetween(
-                profile,
-                isIncome,
-                from,
-                to
-        );
-        if (maxTranCategory == null) maxTranCategory = "nothing";
+        Map<TransactionsCategory, BigDecimal> sumMap = profile.getTransactions().stream()
+                .filter(transaction ->
+                        transaction.getTransactionDate().isAfter(from.minusDays(1)) &&
+                        transaction.getTransactionDate().isBefore(to.plusDays(1)) &&
+                        transaction.getIsIncome() == isIncome)
+                .collect(Collectors.groupingBy(Transaction::getCategory,
+                        Collectors.mapping(Transaction::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
 
-        BigDecimal maxTranSum = transactionRepository.findMaxSumDateBetween(
-                profile,
-                isIncome,
-                from,
-                to
-        );
-        if (maxTranSum == null) maxTranSum = BigDecimal.ZERO;
+        if (sumMap.size() == 0) {
+            return Pair.of("nothing", BigDecimal.ZERO);
+        }
 
-        return Pair.of(maxTranCategory, maxTranSum);
+        Map.Entry<TransactionsCategory, BigDecimal> maxEntry = null;
+        for (Map.Entry<TransactionsCategory, BigDecimal> entry : sumMap.entrySet()) {
+            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) == 1) {
+                maxEntry = entry;
+            }
+        }
+
+        return Pair.of(maxEntry.getKey().getCategory(), maxEntry.getValue());
     }
 
     public CircleStatistics findCategoryAndSumByProfileAndIsIncome(Profile profile, Boolean isIncome) {

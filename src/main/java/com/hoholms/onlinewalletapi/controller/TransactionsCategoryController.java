@@ -1,19 +1,21 @@
 package com.hoholms.onlinewalletapi.controller;
 
+import com.hoholms.onlinewalletapi.entity.TransactionsCategory;
 import com.hoholms.onlinewalletapi.entity.dto.TransactionsCategoryDto;
 import com.hoholms.onlinewalletapi.service.TransactionsCategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/categories")
 @RequiredArgsConstructor
 public class TransactionsCategoryController {
@@ -21,10 +23,22 @@ public class TransactionsCategoryController {
     private final TransactionsCategoryService transactionsCategoryService;
 
     @GetMapping
-    public String getCategories(Model model) {
-        model.addAttribute("categories", transactionsCategoryService.findAllCategoriesOrderByIsIncome());
+    public List<TransactionsCategory> getCategories() {
+        return transactionsCategoryService.findAllCategoriesOrderByIsIncome();
+    }
 
-        return "categoryList";
+    @GetMapping("/income")
+    private List<TransactionsCategory> getIncomeCategories() {
+        return transactionsCategoryService.findByIsIncome(true).stream()
+                .sorted(Comparator.comparing(TransactionsCategory::getId))
+                .toList();
+    }
+
+    @GetMapping("/expense")
+    private List<TransactionsCategory> getExpenseCategories() {
+        return transactionsCategoryService.findByIsIncome(false).stream()
+                .sorted(Comparator.comparing(TransactionsCategory::getId))
+                .toList();
     }
 
     @PostMapping

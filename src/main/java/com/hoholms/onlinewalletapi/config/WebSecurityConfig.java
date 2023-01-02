@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -24,15 +25,14 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .authorizeHttpRequests()
-                .requestMatchers("/", "/login**", "/register", "/logout**", "/static/**", "/js/**", "/activate/**", "/error**")
-                .permitAll()
-                .requestMatchers("/users**", "/categories/**").hasAuthority("ADMIN")
-                .anyRequest()
-                .authenticated()
-                .and()
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/", "/login", "/register", "/activate/**").permitAll()
+                        .requestMatchers("/users/**", "/categories/**").hasAuthority("ADMIN")
+                        .anyRequest().authenticated()
+                )
                 .rememberMe()
-        ;
+                .and()
+                .logout(LogoutConfigurer::permitAll);
 
         return http.build();
     }

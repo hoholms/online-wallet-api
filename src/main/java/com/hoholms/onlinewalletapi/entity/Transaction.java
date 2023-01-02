@@ -29,7 +29,7 @@ public class Transaction {
     @ToString.Exclude
     private Profile profile;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     @ToString.Exclude
     @NotNull(message = "Please provide a category")

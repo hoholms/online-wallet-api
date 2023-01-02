@@ -22,36 +22,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query(value = """
             SELECT category
-            FROM (SELECT category, sum(amount) as sum_amount
-                  FROM transactions
-                           JOIN transactions_categories tc on tc.id = transactions.category_id
-                  WHERE profile_id = :cur_profile and tc.is_income = :isIncome and transaction_date between :from_date and :to_date
-                  group by category) as csa
-            WHERE sum_amount = (SELECT max(sum_amount) FROM (SELECT sum(amount) as sum_amount
-                                                             FROM transactions
-                                                                      JOIN transactions_categories tc on tc.id = transactions.category_id
-                                                             WHERE profile_id = :cur_profile and tc.is_income = :isIncome and transaction_date between :from_date and :to_date
-                                                             group by category) as ttsa)
-            """, nativeQuery = true)
-    String findMaxCategoryDateBetween(@Param("cur_profile") Profile curProfile, @Param("isIncome") Boolean isIncome, @Param("from_date") LocalDate fromDate, @Param("to_date") LocalDate toDate);
-
-    @Query(value = """
-            SELECT sum_amount
-            FROM (SELECT category, sum(amount) as sum_amount
-                  FROM transactions
-                           JOIN transactions_categories tc on tc.id = transactions.category_id
-                  WHERE profile_id = :cur_profile and tc.is_income = :isIncome and transaction_date between :from_date and :to_date
-                  group by category) as csa
-            WHERE sum_amount = (SELECT max(sum_amount) FROM (SELECT sum(amount) as sum_amount
-                                                             FROM transactions
-                                                                      JOIN transactions_categories tc on tc.id = transactions.category_id
-                                                             WHERE profile_id = :cur_profile and tc.is_income = :isIncome and transaction_date between :from_date and :to_date
-                                                             group by category) as ttsa)
-            """, nativeQuery = true)
-    BigDecimal findMaxSumDateBetween(@Param("cur_profile") Profile curProfile, @Param("isIncome") Boolean isIncome, @Param("from_date") LocalDate fromDate, @Param("to_date") LocalDate toDate);
-
-    @Query(value = """
-            SELECT category
             FROM transactions INNER JOIN transactions_categories tc on tc.id = transactions.category_id
             WHERE profile_id = :cur_profile AND transactions.is_income = :isIncome
             GROUP BY category""", nativeQuery = true)
