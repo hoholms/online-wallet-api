@@ -1,6 +1,6 @@
 package com.hoholms.onlinewalletapi.controller;
 
-import com.hoholms.onlinewalletapi.entity.DateWithLabel;
+import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
 import com.hoholms.onlinewalletapi.entity.User;
 import com.hoholms.onlinewalletapi.service.ProfileService;
 import com.hoholms.onlinewalletapi.service.TransactionService;

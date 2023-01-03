@@ -11,11 +11,11 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class UserDtoConverter {
 
-    public User fromDto(UserDto user) {
+    public User fromDto(UserDto userDto) {
         return User.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .password(user.getPassword())
+                .id(userDto.getId())
+                .username(userDto.getUsername())
+                .password(userDto.getPassword())
                 .authority(Collections.singleton(Authority.USER))
                 .build();
     }

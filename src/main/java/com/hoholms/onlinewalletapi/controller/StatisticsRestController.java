@@ -1,8 +1,8 @@
 package com.hoholms.onlinewalletapi.controller;
 
-import com.hoholms.onlinewalletapi.entity.CircleStatistics;
-import com.hoholms.onlinewalletapi.entity.DateWithLabel;
-import com.hoholms.onlinewalletapi.entity.LineStatistics;
+import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
+import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
+import com.hoholms.onlinewalletapi.entity.dto.LineStatistics;
 import com.hoholms.onlinewalletapi.entity.User;
 import com.hoholms.onlinewalletapi.service.StatisticsService;
 import lombok.RequiredArgsConstructor;

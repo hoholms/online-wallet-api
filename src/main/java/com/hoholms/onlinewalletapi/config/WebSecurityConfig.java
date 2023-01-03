@@ -27,7 +27,7 @@ public class WebSecurityConfig {
                 .csrf().disable()
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/", "/login", "/register", "/activate/**").permitAll()
-                        .requestMatchers("/users/**", "/categories/**").hasAuthority("ADMIN")
+                        .requestMatchers("/users/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .rememberMe()

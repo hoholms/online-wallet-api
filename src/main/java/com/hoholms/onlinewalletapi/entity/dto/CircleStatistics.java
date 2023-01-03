@@ -1,4 +1,4 @@
-package com.hoholms.onlinewalletapi.entity;
+package com.hoholms.onlinewalletapi.entity.dto;
 
 import lombok.*;
 import org.springframework.security.core.Transient;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LineStatistics {
-    private List<String> labels;
+public class CircleStatistics {
+    private List<String> categories;
     private List<BigDecimal> values;
 }

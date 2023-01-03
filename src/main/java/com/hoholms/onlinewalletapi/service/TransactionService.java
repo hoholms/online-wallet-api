@@ -1,6 +1,9 @@
 package com.hoholms.onlinewalletapi.service;
 
+import com.hoholms.onlinewalletapi.controller.ControllerUtils;
 import com.hoholms.onlinewalletapi.entity.*;
+import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
+import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
 import com.hoholms.onlinewalletapi.entity.dto.TransactionDto;
 import com.hoholms.onlinewalletapi.exception.TransactionCategoryNotFoundException;
 import com.hoholms.onlinewalletapi.exception.TransactionNotFoundException;
@@ -88,13 +91,7 @@ public class TransactionService {
             LocalDate from,
             LocalDate to
     ) {
-        Map<TransactionsCategory, BigDecimal> sumMap = profile.getTransactions().stream()
-                .filter(transaction ->
-                        transaction.getTransactionDate().isAfter(from.minusDays(1)) &&
-                        transaction.getTransactionDate().isBefore(to.plusDays(1)) &&
-                        transaction.getIsIncome() == isIncome)
-                .collect(Collectors.groupingBy(Transaction::getCategory,
-                        Collectors.mapping(Transaction::getAmount, Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))));
+        Map<TransactionsCategory, BigDecimal> sumMap = ControllerUtils.getCategoriesSumMap(profile, isIncome, from, to);
 
         if (sumMap.size() == 0) {
             return Pair.of("nothing", BigDecimal.ZERO);
@@ -102,7 +99,7 @@ public class TransactionService {
 
         Map.Entry<TransactionsCategory, BigDecimal> maxEntry = null;
         for (Map.Entry<TransactionsCategory, BigDecimal> entry : sumMap.entrySet()) {
-            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) == 1) {
+            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
                 maxEntry = entry;
             }
         }

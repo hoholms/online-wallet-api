@@ -1,11 +1,9 @@
 package com.hoholms.onlinewalletapi.service;
 
+import com.hoholms.onlinewalletapi.entity.Authority;
 import com.hoholms.onlinewalletapi.entity.Profile;
 import com.hoholms.onlinewalletapi.entity.User;
-import com.hoholms.onlinewalletapi.entity.dto.ProfileDto;
-import com.hoholms.onlinewalletapi.entity.dto.ProfileDtoConverter;
-import com.hoholms.onlinewalletapi.entity.dto.UserDto;
-import com.hoholms.onlinewalletapi.entity.dto.UserDtoConverter;
+import com.hoholms.onlinewalletapi.entity.dto.*;
 import com.hoholms.onlinewalletapi.exception.EmailAlreadyExistsException;
 import com.hoholms.onlinewalletapi.exception.PasswordsDontMatchException;
 import com.hoholms.onlinewalletapi.exception.UsernameAlreadyExistsException;
@@ -14,6 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Collections;
 import java.util.Objects;
 
 @Service
@@ -26,9 +27,22 @@ public class RegisterService {
     private final ProfileService profileService;
 
 
-    public void registerUser(UserDto userDto, ProfileDto profileDto, String passwordConfirm) {
-        User user = userDtoConverter.fromDto(userDto);
-        Profile profile = profileDtoConverter.fromDto(profileDto, user);
+    public void registerUser(RegisterDto registerDto) {
+        User user = User.builder()
+                .id(null)
+                .username(registerDto.getUsername())
+                .password(registerDto.getPassword())
+                .authority(Collections.singleton(Authority.USER))
+                .build();
+        Profile profile = Profile.builder()
+                .user(user)
+                .firstName(registerDto.getFirstName())
+                .lastName(registerDto.getLastName())
+                .email(registerDto.getEmail())
+                .balance(BigDecimal.ZERO)
+                .createdDate(Instant.now())
+                .build();
+        String passwordConfirm = registerDto.getPasswordConfirm();
 
         if (userService.existsUserByUsername(user.getUsername())) {
             logger.error("User not added, because user {} already exists", user.getUsername());

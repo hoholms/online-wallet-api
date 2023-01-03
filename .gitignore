@@ -7,6 +7,9 @@ target/
 /logs
 /scripts
 
+### Dev profile ###
+/src/main/resources/application-dev.properties
+
 ### STS ###
 .apt_generated
 .classpath

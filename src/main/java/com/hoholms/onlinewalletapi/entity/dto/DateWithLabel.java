@@ -1,4 +1,4 @@
-package com.hoholms.onlinewalletapi.entity;
+package com.hoholms.onlinewalletapi.entity.dto;
 
 import lombok.*;
 import org.springframework.security.core.Transient;

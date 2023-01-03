@@ -49,63 +49,63 @@ public class DashboardController {
     }
 
     @GetMapping("/profile")
-    private Profile getProfile(@AuthenticationPrincipal User user) {
+    private ResponseEntity<Profile> getProfile(@AuthenticationPrincipal User user) {
         logger.info("Dashboard profile info call by user id {}", user.getId());
-        return profileService.findProfileByUser(user);
+        return new ResponseEntity<>(profileService.findProfileByUser(user), HttpStatus.OK);
     }
 
     @GetMapping("/transactions")
-    private List<Transaction> getTransactions(@AuthenticationPrincipal User user) {
+    private ResponseEntity<List<Transaction>> getTransactions(@AuthenticationPrincipal User user) {
         logger.info("Dashboard transactions info call by user id {}", user.getId());
         Profile currentProfile = profileService.findProfileByUser(user);
-        return currentProfile.getTransactions()
+        return new ResponseEntity<>(currentProfile.getTransactions()
                 .stream()
                 .sorted(Comparator.comparing(Transaction::getTransactionDate)
                         .thenComparing(Transaction::getId).reversed())
-                .toList();
+                .toList(), HttpStatus.OK);
     }
 
     @GetMapping("/month/income")
-    private BigDecimal getMonthIncome(@AuthenticationPrincipal User user) {
+    private ResponseEntity<BigDecimal> getMonthIncome(@AuthenticationPrincipal User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
-        return transactionService.findTranSumDateBetween(
+        return new ResponseEntity<>(transactionService.findTranSumDateBetween(
                 currentProfile,
                 true,
                 LocalDate.now().withDayOfMonth(1),
                 LocalDate.now()
-        );
+        ), HttpStatus.OK);
     }
 
     @GetMapping("/month/expense")
-    private BigDecimal getMonthExpense(@AuthenticationPrincipal User user) {
+    private ResponseEntity<BigDecimal> getMonthExpense(@AuthenticationPrincipal User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
-        return transactionService.findTranSumDateBetween(
+        return new ResponseEntity<>(transactionService.findTranSumDateBetween(
                 currentProfile,
                 false,
                 LocalDate.now().withDayOfMonth(1),
                 LocalDate.now()
-        );
+        ), HttpStatus.OK);
     }
 
     @GetMapping("/month/income/category")
-    private Pair<String, BigDecimal> getMaxIncomeCategory(@AuthenticationPrincipal User user) {
+    private ResponseEntity<Pair<String, BigDecimal>> getMaxIncomeCategory(@AuthenticationPrincipal User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
-        return transactionService.findMaxCategorySumDateBetween(
+        return new ResponseEntity<>(transactionService.findMaxCategorySumDateBetween(
                 currentProfile,
                 true,
                 LocalDate.now().withDayOfMonth(1),
                 LocalDate.now()
-        );
+        ), HttpStatus.OK);
     }
 
     @GetMapping("/month/expense/category")
-    private Pair<String, BigDecimal> getMaxExpenseCategory(@AuthenticationPrincipal User user) {
+    private ResponseEntity<Pair<String, BigDecimal>> getMaxExpenseCategory(@AuthenticationPrincipal User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
-        return transactionService.findMaxCategorySumDateBetween(
+        return new ResponseEntity<>(transactionService.findMaxCategorySumDateBetween(
                 currentProfile,
                 false,
                 LocalDate.now().withDayOfMonth(1),
                 LocalDate.now()
-        );
+        ), HttpStatus.OK);
     }
 }

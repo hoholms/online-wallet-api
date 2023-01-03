@@ -1,6 +1,9 @@
 package com.hoholms.onlinewalletapi.service;
 
 import com.hoholms.onlinewalletapi.entity.*;
+import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
+import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
+import com.hoholms.onlinewalletapi.entity.dto.LineStatistics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

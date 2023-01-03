@@ -1,6 +1,5 @@
-package com.hoholms.onlinewalletapi.controller;
+package com.hoholms.onlinewalletapi.entity.dto;
 
-import com.hoholms.onlinewalletapi.entity.dto.LoginDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
