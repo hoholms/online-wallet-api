@@ -1,6 +1,9 @@
 package com.hoholms.onlinewalletapi.service;
 
-import com.hoholms.onlinewalletapi.entity.*;
+import com.hoholms.onlinewalletapi.controller.ControllerUtils;
+import com.hoholms.onlinewalletapi.entity.Profile;
+import com.hoholms.onlinewalletapi.entity.Transaction;
+import com.hoholms.onlinewalletapi.entity.User;
 import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
 import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
 import com.hoholms.onlinewalletapi.entity.dto.LineStatistics;
@@ -18,6 +21,17 @@ import java.util.List;
 public class StatisticsService {
     private final ProfileService profileService;
     private final TransactionService transactionService;
+
+    private static List<CircleStatistics> getCircleStatistics(Profile currentProfile, DateWithLabel from, DateWithLabel to) {
+        CircleStatistics incomeStatistics = new CircleStatistics(ControllerUtils.getCategoriesSumMap(currentProfile, true, from.getDate(), to.getDate()));
+        CircleStatistics expenseStatistics = new CircleStatistics(ControllerUtils.getCategoriesSumMap(currentProfile, false, from.getDate(), to.getDate()));
+
+        List<CircleStatistics> statistics = new ArrayList<>();
+        statistics.add(incomeStatistics);
+        statistics.add(expenseStatistics);
+
+        return statistics;
+    }
 
     public List<LineStatistics> findLineStatistics(User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
@@ -90,14 +104,7 @@ public class StatisticsService {
                 .getTransactionDate());
         DateWithLabel to = new DateWithLabel(LocalDate.now());
 
-        CircleStatistics incomeStatistics = transactionService.findCategoryAndSumByProfileAndIsIncome(currentProfile, true, from, to);
-        CircleStatistics expenseStatistics = transactionService.findCategoryAndSumByProfileAndIsIncome(currentProfile, false, from, to);
-
-        List<CircleStatistics> statistics = new ArrayList<>();
-        statistics.add(incomeStatistics);
-        statistics.add(expenseStatistics);
-
-        return statistics;
+        return getCircleStatistics(currentProfile, from, to);
     }
 
     public List<CircleStatistics> findCircleStatistics(User user, DateWithLabel from, DateWithLabel to) {
@@ -116,14 +123,9 @@ public class StatisticsService {
             to.setDate(to.getDate().withDayOfMonth(to.getDate().getMonth().length(LocalDate.now().isLeapYear())));
         }
 
+        from.setDate(from.getDate().withDayOfMonth(1));
 
-        CircleStatistics incomeStatistics = transactionService.findCategoryAndSumByProfileAndIsIncome(currentProfile, true, from, to);
-        CircleStatistics expenseStatistics = transactionService.findCategoryAndSumByProfileAndIsIncome(currentProfile, false, from, to);
 
-        List<CircleStatistics> statistics = new ArrayList<>();
-        statistics.add(incomeStatistics);
-        statistics.add(expenseStatistics);
-
-        return statistics;
+        return getCircleStatistics(currentProfile, from, to);
     }
 }

@@ -1,7 +1,10 @@
 package com.hoholms.onlinewalletapi.service;
 
 import com.hoholms.onlinewalletapi.controller.ControllerUtils;
-import com.hoholms.onlinewalletapi.entity.*;
+import com.hoholms.onlinewalletapi.entity.Profile;
+import com.hoholms.onlinewalletapi.entity.Transaction;
+import com.hoholms.onlinewalletapi.entity.TransactionsCategory;
+import com.hoholms.onlinewalletapi.entity.User;
 import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
 import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
 import com.hoholms.onlinewalletapi.entity.dto.TransactionDto;
@@ -17,11 +20,13 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

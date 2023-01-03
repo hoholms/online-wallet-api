@@ -38,9 +38,9 @@ public class DashboardController {
     ) {
         Profile currentProfile = profileService.findProfileByUser(user);
 
-            Transaction transaction = transactionDtoConverter.fromDto(transactionDto, currentProfile);
-            transactionService.add(transaction, currentProfile);
-            currentProfile.setBalance(profileService.getCalcBalance(currentProfile));
+        Transaction transaction = transactionDtoConverter.fromDto(transactionDto, currentProfile);
+        transactionService.add(transaction, currentProfile);
+        currentProfile.setBalance(profileService.getCalcBalance(currentProfile));
 
         profileService.calcBalance(user);
 

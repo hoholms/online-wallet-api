@@ -24,7 +24,7 @@ public class TransactionsCategoryController {
 
     @GetMapping
     public List<TransactionsCategory> getCategories() {
-        return transactionsCategoryService.findAllCategoriesOrderByIsIncome();
+        return transactionsCategoryService.findAllCategoriesOrderById();
     }
 
     @GetMapping("/income")

@@ -45,6 +45,10 @@ public class TransactionsCategoryService {
         return categoryRepository.findAll(Sort.by(Sort.Direction.DESC, "isIncome"));
     }
 
+    public List<TransactionsCategory> findAllCategoriesOrderById() {
+        return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+    }
+
     public void updateCategory(TransactionsCategoryDto categoryDto) {
         TransactionsCategory categoryFromDB = categoryRepository.findById(categoryDto.getId()).orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction categoryDto not found!"));
         categoryFromDB.setCategory(categoryDto.getCategory());

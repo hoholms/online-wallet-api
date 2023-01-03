@@ -1,30 +1,59 @@
 package com.hoholms.onlinewalletapi.controller;
 
-import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
 import com.hoholms.onlinewalletapi.entity.User;
-import com.hoholms.onlinewalletapi.service.ProfileService;
+import com.hoholms.onlinewalletapi.entity.dto.CircleStatistics;
+import com.hoholms.onlinewalletapi.entity.dto.DateWithLabel;
+import com.hoholms.onlinewalletapi.entity.dto.LineStatistics;
+import com.hoholms.onlinewalletapi.service.StatisticsService;
 import com.hoholms.onlinewalletapi.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/statistics")
 public class StatisticsController {
+    private final StatisticsService statisticsService;
     private final TransactionService transactionService;
-    private final ProfileService profileService;
 
-    @GetMapping("statistics")
-    public String statistics(@AuthenticationPrincipal User user, Model model) {
-        List<DateWithLabel> dates = transactionService.findTransactionsDatesWithLabels(user);
-        model.addAttribute("dates", dates);
+    @GetMapping
+    public ResponseEntity<List<DateWithLabel>> statistics(@AuthenticationPrincipal User user, Model model) {
+        return new ResponseEntity<>(transactionService.findTransactionsDatesWithLabels(user), HttpStatus.OK);
+    }
 
-        model.addAttribute("currentProfile", profileService.findProfileByUser(user));
+    @GetMapping("/line")
+    public ResponseEntity<List<LineStatistics>> getLineStatistics(@AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(statisticsService.findLineStatistics(user), HttpStatus.OK);
+    }
 
-        return "statistics";
+    @GetMapping("/circle")
+    public ResponseEntity<List<CircleStatistics>> getCircleStatistics(@AuthenticationPrincipal User user) {
+        return new ResponseEntity<>(statisticsService.findCircleStatistics(user), HttpStatus.OK);
+    }
+
+    @PutMapping("/line")
+    public ResponseEntity<List<LineStatistics>> getLineStatisticsByDates(
+            @AuthenticationPrincipal User user,
+            @RequestParam String from,
+            @RequestParam String to
+    ) {
+        return new ResponseEntity<>(statisticsService.findLineStatistics(user, new DateWithLabel(from), new DateWithLabel(to)),
+                HttpStatus.FOUND);
+    }
+
+    @PutMapping("/circle")
+    public ResponseEntity<List<CircleStatistics>> getCircleStatisticsByDates(
+            @AuthenticationPrincipal User user,
+            @RequestParam String from,
+            @RequestParam String to
+    ) {
+        return new ResponseEntity<>(statisticsService.findCircleStatistics(user, new DateWithLabel(from), new DateWithLabel(to)),
+                HttpStatus.FOUND);
     }
 }
