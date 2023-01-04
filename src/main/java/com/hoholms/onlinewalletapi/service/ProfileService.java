@@ -1,22 +1,22 @@
 package com.hoholms.onlinewalletapi.service;
 
+import com.hoholms.onlinewalletapi.entity.Currency;
 import com.hoholms.onlinewalletapi.entity.Profile;
 import com.hoholms.onlinewalletapi.entity.User;
-import com.hoholms.onlinewalletapi.entity.dto.PasswordChangeDto;
-import com.hoholms.onlinewalletapi.entity.dto.ProfileDto;
-import com.hoholms.onlinewalletapi.exception.EmailAlreadyExistsException;
-import com.hoholms.onlinewalletapi.exception.OldPasswordDontMatchException;
-import com.hoholms.onlinewalletapi.exception.PasswordsDontMatchException;
-import com.hoholms.onlinewalletapi.exception.ProfileNotFoundException;
+import com.hoholms.onlinewalletapi.entity.dto.UpdateProfileDto;
+import com.hoholms.onlinewalletapi.exception.*;
 import com.hoholms.onlinewalletapi.repository.ProfileRepository;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -72,70 +72,74 @@ public class ProfileService {
         return true;
     }
 
-    public String updateProfile(HttpServletRequest request, User user, ProfileDto profileDto, PasswordChangeDto passwordChangeDto) {
+    public void updateProfile(HttpServletRequest request, HttpServletResponse response, User user, UpdateProfileDto updateProfileDto) {
         Profile currentProfile = profileRepository.findByUser(user)
                 .orElseThrow(() -> new ProfileNotFoundException(
                         String.format("Profile for user %s not found!", user.getId())
                 ));
 
         String userEmail = currentProfile.getEmail();
-        boolean isEmailChanged = (profileDto.getEmail() != null && !profileDto.getEmail().equals(userEmail) ||
-                userEmail != null && !userEmail.equals(profileDto.getEmail()));
+        boolean isEmailChanged = (updateProfileDto.getEmail() != null && !updateProfileDto.getEmail().equals(userEmail) ||
+                userEmail != null && !userEmail.equals(updateProfileDto.getEmail()));
 
         String userFirstName = currentProfile.getFirstName();
-        boolean isFirstNameChanged = (profileDto.getFirstName() != null && !profileDto.getFirstName().equals(userFirstName) ||
-                userFirstName != null && !userFirstName.equals(profileDto.getFirstName()));
+        boolean isFirstNameChanged = (updateProfileDto.getFirstName() != null && !updateProfileDto.getFirstName().equals(userFirstName) ||
+                userFirstName != null && !userFirstName.equals(updateProfileDto.getFirstName()));
 
         String userLastName = currentProfile.getLastName();
-        boolean isLastNameChanged = (profileDto.getLastName() != null && !profileDto.getLastName().equals(userLastName) ||
-                userLastName != null && !userLastName.equals(profileDto.getLastName()));
+        boolean isLastNameChanged = (updateProfileDto.getLastName() != null && !updateProfileDto.getLastName().equals(userLastName) ||
+                userLastName != null && !userLastName.equals(updateProfileDto.getLastName()));
 
-        boolean isPasswordChanged = !ObjectUtils.isEmpty(passwordChangeDto.getNewPassword());
+        boolean isPasswordChanged = !ObjectUtils.isEmpty(updateProfileDto.getNewPassword());
 
         if (isFirstNameChanged) {
-            currentProfile.setFirstName(profileDto.getFirstName());
+            currentProfile.setFirstName(updateProfileDto.getFirstName());
         }
 
         if (isLastNameChanged) {
-            currentProfile.setLastName(profileDto.getLastName());
+            currentProfile.setLastName(updateProfileDto.getLastName());
         }
 
         if (isPasswordChanged) {
-            if (!BCrypt.checkpw(passwordChangeDto.getOldPassword(), user.getPassword())) {
+            if (updateProfileDto.getOldPassword() == null ||
+                    !BCrypt.checkpw(updateProfileDto.getOldPassword(), user.getPassword())) {
                 throw new OldPasswordDontMatchException("Old password is incorrect");
-            } else if (!passwordChangeDto.getNewPassword().equals(passwordChangeDto.getConfirmPassword())) {
+            } else if (!updateProfileDto.getNewPassword().equals(updateProfileDto.getConfirmPassword())) {
                 throw new PasswordsDontMatchException("Passwords don't match");
             }
 
-            user.setPassword(passwordEncoder.encode(passwordChangeDto.getNewPassword()));
+            user.setPassword(passwordEncoder.encode(updateProfileDto.getNewPassword()));
         }
 
-        if (isEmailChanged && !existsProfileByEmail(profileDto.getEmail())) {
-            currentProfile.setEmail(profileDto.getEmail());
+        if (isEmailChanged && !existsProfileByEmail(updateProfileDto.getEmail())) {
+            currentProfile.setEmail(updateProfileDto.getEmail());
             currentProfile.setActivationCode(UUID.randomUUID().toString());
             sendMail(currentProfile);
             user.setEnabled(false);
-            logger.info("Profile id {} has been updated", currentProfile.getId());
-        } else if (isEmailChanged && existsProfileByEmail(profileDto.getEmail())) {
-            logger.error("Profile id {} failed to update", currentProfile.getId());
+            logger.info("Profile's by id {} email has been updated", currentProfile.getId());
+        } else if (isEmailChanged && existsProfileByEmail(updateProfileDto.getEmail())) {
+            logger.error("Profile's by id {} email failed to update", currentProfile.getId());
             throw new EmailAlreadyExistsException("Email already registered!");
         }
 
-        currentProfile.setCurrency(profileDto.getCurrency());
+        if (updateProfileDto.getCurrency() != null && !currentProfile.getCurrency().equals(updateProfileDto.getCurrency())) {
+            try {
+                Currency.valueOf(updateProfileDto.getCurrency().toUpperCase());
+                currentProfile.setCurrency(updateProfileDto.getCurrency());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidCurrencyException("Please provide an EXISTING currency");
+            }
+        }
 
         userService.save(user);
         profileRepository.save(currentProfile);
 
         if (isEmailChanged || isPasswordChanged) {
-            try {
-                request.logout();
-                return "redirect:/login";
-            } catch (ServletException e) {
-                logger.error(e.getMessage());
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null) {
+                new SecurityContextLogoutHandler().logout(request, response, auth);
             }
         }
-
-        return "profile";
     }
 
     public void calcBalance(User user) {

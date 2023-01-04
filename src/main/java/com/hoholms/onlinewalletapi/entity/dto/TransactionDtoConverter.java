@@ -20,7 +20,7 @@ public class TransactionDtoConverter {
                 .isIncome(transactionDto.getIsIncome())
                 .amount(transactionDto.getAmount())
                 .message(transactionDto.getMessage())
-                .transactionDate(LocalDate.parse(transactionDto.getTransactionDate()))
+                .transactionDate(transactionDto.getTransactionDate() != null ? LocalDate.parse(transactionDto.getTransactionDate()) : LocalDate.now())
                 .build();
     }
 

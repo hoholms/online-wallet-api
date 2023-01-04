@@ -1,5 +1,7 @@
 package com.hoholms.onlinewalletapi.config;
 
+import com.hoholms.onlinewalletapi.exception.MyAccessDeniedHandler;
+import com.hoholms.onlinewalletapi.exception.MyAuthenticationEntryPoint;
 import com.hoholms.onlinewalletapi.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,14 +26,18 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .exceptionHandling().accessDeniedHandler(new MyAccessDeniedHandler()).authenticationEntryPoint(new MyAuthenticationEntryPoint())
+                .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/login", "/register", "/activate/**").permitAll()
+                        .requestMatchers("/", "/login**", "/logout**", "/register**", "/activate**", "/currencies**").permitAll()
                         .requestMatchers("/users/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .rememberMe()
                 .and()
-                .logout(LogoutConfigurer::permitAll);
+                .logout()
+                .logoutUrl("/login?logout")
+                .logoutSuccessUrl("/login");
 
         return http.build();
     }

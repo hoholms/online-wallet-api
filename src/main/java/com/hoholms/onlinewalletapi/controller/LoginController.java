@@ -1,6 +1,8 @@
-package com.hoholms.onlinewalletapi.entity.dto;
+package com.hoholms.onlinewalletapi.controller;
 
+import com.hoholms.onlinewalletapi.entity.dto.LoginDto;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -12,10 +14,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 
@@ -27,7 +27,7 @@ public class LoginController {
 
     @GetMapping("/login")
     public ResponseEntity<Principal> getLogin(Principal principal) {
-        return new ResponseEntity<Principal>(principal, HttpStatus.OK);
+        return new ResponseEntity<>(principal, HttpStatus.OK);
     }
 
     @PostMapping("/login")
@@ -47,5 +47,14 @@ public class LoginController {
         logger.info("User {} logged in", loginDto.getUsername());
 
         return new ResponseEntity<>(authentication, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/logout")
+    @ResponseStatus(HttpStatus.OK)
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
     }
 }

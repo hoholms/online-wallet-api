@@ -52,7 +52,6 @@ public class Profile {
     @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
-    @JsonIgnore
     private User user;
 
     @Column(name = "activation_code")

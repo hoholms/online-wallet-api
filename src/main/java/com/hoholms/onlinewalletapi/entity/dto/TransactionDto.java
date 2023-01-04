@@ -31,6 +31,5 @@ public class TransactionDto implements Serializable {
     @Length(max = 255, message = "Message is too long")
     private final String message;
 
-    @NotBlank(message = "Please provide valid transaction date")
     private final String transactionDate;
 }

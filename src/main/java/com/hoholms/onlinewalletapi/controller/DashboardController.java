@@ -48,20 +48,15 @@ public class DashboardController {
         return new ResponseEntity<>(transaction, HttpStatus.OK);
     }
 
-    @GetMapping("/profile")
-    private ResponseEntity<Profile> getProfile(@AuthenticationPrincipal User user) {
-        logger.info("Dashboard profile info call by user id {}", user.getId());
-        return new ResponseEntity<>(profileService.findProfileByUser(user), HttpStatus.OK);
-    }
-
     @GetMapping("/transactions")
-    private ResponseEntity<List<Transaction>> getTransactions(@AuthenticationPrincipal User user) {
+    private ResponseEntity<List<TransactionDto>> getTransactions(@AuthenticationPrincipal User user) {
         logger.info("Dashboard transactions info call by user id {}", user.getId());
         Profile currentProfile = profileService.findProfileByUser(user);
         return new ResponseEntity<>(currentProfile.getTransactions()
                 .stream()
                 .sorted(Comparator.comparing(Transaction::getTransactionDate)
                         .thenComparing(Transaction::getId).reversed())
+                .map(transactionDtoConverter::toDto)
                 .toList(), HttpStatus.OK);
     }
 
