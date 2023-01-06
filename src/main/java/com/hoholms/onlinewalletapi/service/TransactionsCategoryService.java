@@ -37,6 +37,11 @@ public class TransactionsCategoryService {
                 .orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!"));
     }
 
+    public TransactionsCategory findByCategoryAndIsIncome(String category, boolean isIncome) {
+        return categoryRepository.findByCategoryAndIsIncome(category, isIncome)
+                .orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!"));
+    }
+
     public List<TransactionsCategory> findByIsIncome(boolean isIncome) {
         return categoryRepository.findByIsIncome(isIncome);
     }

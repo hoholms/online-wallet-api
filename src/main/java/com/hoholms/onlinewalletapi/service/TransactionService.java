@@ -59,10 +59,12 @@ public class TransactionService {
         if (transactionDto.getAmount() != null) {
             transaction.setAmount(transactionDto.getAmount());
         }
-        transaction.setCategory(categoryRepository.findByCategory(transactionDto.getCategory())
+        transaction.setCategory(categoryRepository.findByCategoryAndIsIncome(transactionDto.getCategory(), transactionDto.getIsIncome())
                 .orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!")));
         transaction.setTransactionDate(parseDate(transactionDto.getTransactionDate()));
-        transaction.setMessage(transaction.getMessage());
+        transaction.setMessage(transactionDto.getMessage());
+        currentProfile.setBalance(profileService.getCalcBalance(currentProfile));
+        profileService.calcBalance(user);
 
         transactionRepository.save(transaction);
         profileService.save(currentProfile);
@@ -158,7 +160,10 @@ public class TransactionService {
     public void deleteTransactionById(Long transactionID, User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
 
-        transactionRepository.deleteById(transactionID);
+        Transaction transactionFromDb = findTransactionByIdAndProfile(transactionID, currentProfile);
+        transactionRepository.delete(transactionFromDb);
+        currentProfile.setBalance(profileService.getCalcBalance(currentProfile));
+        profileService.calcBalance(user);
 
         profileService.save(currentProfile);
     }

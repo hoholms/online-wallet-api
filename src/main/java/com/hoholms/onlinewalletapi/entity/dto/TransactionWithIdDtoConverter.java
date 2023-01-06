@@ -10,13 +10,13 @@ import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor
-public class TransactionDtoConverter {
+public class TransactionWithIdDtoConverter {
     private final TransactionsCategoryService categoryService;
 
-    public Transaction fromDto(TransactionDto transactionDto, Profile profile) {
+    public Transaction fromDto(TransactionWithIdDto transactionDto, Profile profile) {
         return Transaction.builder()
                 .profile(profile)
-                .category(categoryService.findByCategoryAndIsIncome(transactionDto.getCategory(), transactionDto.getIsIncome()))
+                .category(categoryService.findByCategory(transactionDto.getCategory()))
                 .isIncome(transactionDto.getIsIncome())
                 .amount(transactionDto.getAmount())
                 .message(transactionDto.getMessage())
@@ -24,8 +24,9 @@ public class TransactionDtoConverter {
                 .build();
     }
 
-    public TransactionDto toDto(Transaction transaction) {
-        return TransactionDto.builder()
+    public TransactionWithIdDto toDto(Transaction transaction) {
+        return TransactionWithIdDto.builder()
+                .id(transaction.getId())
                 .category(transaction.getCategory().getCategory())
                 .transactionDate(transaction.getTransactionDate().toString())
                 .amount(transaction.getAmount())

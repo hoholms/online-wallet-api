@@ -1,13 +1,10 @@
 package com.hoholms.onlinewalletapi.controller;
 
 import com.hoholms.onlinewalletapi.entity.Profile;
-import com.hoholms.onlinewalletapi.entity.Transaction;
 import com.hoholms.onlinewalletapi.entity.User;
-import com.hoholms.onlinewalletapi.entity.dto.TransactionDto;
 import com.hoholms.onlinewalletapi.entity.dto.TransactionDtoConverter;
 import com.hoholms.onlinewalletapi.service.ProfileService;
 import com.hoholms.onlinewalletapi.service.TransactionService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +12,12 @@ import org.springframework.data.util.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,35 +27,6 @@ public class DashboardController {
     private final ProfileService profileService;
     private final TransactionService transactionService;
     private final TransactionDtoConverter transactionDtoConverter;
-
-    @PostMapping
-    public ResponseEntity<Transaction> addTransaction(
-            @AuthenticationPrincipal User user,
-            @RequestBody @Valid TransactionDto transactionDto
-    ) {
-        Profile currentProfile = profileService.findProfileByUser(user);
-
-        Transaction transaction = transactionDtoConverter.fromDto(transactionDto, currentProfile);
-        transactionService.add(transaction, currentProfile);
-        currentProfile.setBalance(profileService.getCalcBalance(currentProfile));
-
-        profileService.calcBalance(user);
-
-        logger.info("User by id {} added new transaction", user.getId());
-        return new ResponseEntity<>(transaction, HttpStatus.OK);
-    }
-
-    @GetMapping("/transactions")
-    private ResponseEntity<List<TransactionDto>> getTransactions(@AuthenticationPrincipal User user) {
-        logger.info("Dashboard transactions info call by user id {}", user.getId());
-        Profile currentProfile = profileService.findProfileByUser(user);
-        return new ResponseEntity<>(currentProfile.getTransactions()
-                .stream()
-                .sorted(Comparator.comparing(Transaction::getTransactionDate)
-                        .thenComparing(Transaction::getId).reversed())
-                .map(transactionDtoConverter::toDto)
-                .toList(), HttpStatus.OK);
-    }
 
     @GetMapping("/month/income")
     private ResponseEntity<BigDecimal> getMonthIncome(@AuthenticationPrincipal User user) {

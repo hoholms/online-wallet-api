@@ -12,4 +12,5 @@ public interface TransactionsCategoryRepository extends JpaRepository<Transactio
 
     Optional<TransactionsCategory> findByCategory(String category);
 
+    Optional<TransactionsCategory> findByCategoryAndIsIncome(String category, boolean isIncome);
 }

@@ -29,7 +29,7 @@ public class WebSecurityConfig {
                 .exceptionHandling().accessDeniedHandler(new MyAccessDeniedHandler()).authenticationEntryPoint(new MyAuthenticationEntryPoint())
                 .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/login**", "/logout**", "/register**", "/activate**", "/currencies**").permitAll()
+                        .requestMatchers("/", "/login**", "/logout**", "/register**", "/activate**").permitAll()
                         .requestMatchers("/users/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
