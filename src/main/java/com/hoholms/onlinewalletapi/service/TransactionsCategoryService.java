@@ -54,14 +54,11 @@ public class TransactionsCategoryService {
         return categoryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
     }
 
-    public void updateCategory(TransactionsCategoryDto categoryDto) {
-        TransactionsCategory categoryFromDB = categoryRepository.findById(categoryDto.getId()).orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction categoryDto not found!"));
+    public TransactionsCategory updateCategory(Long categoryId, TransactionsCategoryDto categoryDto) {
+        TransactionsCategory categoryFromDB = categoryRepository.findById(categoryId).orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction categoryDto not found!"));
         categoryFromDB.setCategory(categoryDto.getCategory());
-        if (categoryDto.getIsIncome() != null) {
-            categoryFromDB.setIsIncome(categoryDto.getIsIncome());
-        } else {
-            categoryFromDB.setIsIncome(Boolean.FALSE);
-        }
+        categoryFromDB.setIsIncome(categoryDto.getIsIncome());
+        return categoryFromDB;
     }
 
     public void deleteCategoryById(Long id) {
@@ -80,8 +77,10 @@ public class TransactionsCategoryService {
         categoryRepository.save(transactionsCategory);
     }
 
-    public void addCategory(TransactionsCategoryDto categoryDto) {
+    public TransactionsCategory addCategory(TransactionsCategoryDto categoryDto) {
         TransactionsCategory transactionsCategory = categoryDtoConverter.fromDto(categoryDto);
         categoryRepository.save(transactionsCategory);
+
+        return transactionsCategory;
     }
 }

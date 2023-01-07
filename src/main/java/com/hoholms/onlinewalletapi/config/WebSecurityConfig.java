@@ -30,7 +30,7 @@ public class WebSecurityConfig {
                 .and()
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/", "/login**", "/logout**", "/register**", "/activate**").permitAll()
-                        .requestMatchers("/users/**").hasAuthority("ADMIN")
+                        .requestMatchers("/users/**", "/categories/edit**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .rememberMe()

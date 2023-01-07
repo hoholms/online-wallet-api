@@ -3,7 +3,6 @@ package com.hoholms.onlinewalletapi.controller;
 import com.hoholms.onlinewalletapi.entity.Profile;
 import com.hoholms.onlinewalletapi.entity.User;
 import com.hoholms.onlinewalletapi.entity.dto.UpdateProfileDto;
-import com.hoholms.onlinewalletapi.exception.RegisterException;
 import com.hoholms.onlinewalletapi.service.ProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,11 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,34 +23,19 @@ public class ProfileController {
     private final ProfileService profileService;
 
     @GetMapping
-    private ResponseEntity<Profile> getProfile(@AuthenticationPrincipal User user) {
+    public ResponseEntity<Profile> getProfile(@AuthenticationPrincipal User user) {
         logger.info("Profile info call by user id {}", user.getId());
         return new ResponseEntity<>(profileService.findProfileByUser(user), HttpStatus.OK);
     }
 
     @PutMapping
-    public ResponseEntity<Map<String, String>> updateProfile(
+    public void updateProfile(
             HttpServletRequest request,
             HttpServletResponse response,
             @AuthenticationPrincipal User user,
-            @RequestBody @Valid UpdateProfileDto updateProfileDto,
-            BindingResult bindingResult
+            @RequestBody @Valid UpdateProfileDto updateProfileDto
     ) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ControllerUtils.getErrors(bindingResult));
-        } else {
-            try {
-                profileService.updateProfile(request, response, user, updateProfileDto);
-                logger.info("User {} profile has been updated", user.getUsername());
-            } catch (RegisterException e) {
-                return new ResponseEntity<>(new HashMap<>() {{
-                    put(e.getClass().toString(), e.getMessage());
-                }}, HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        return new ResponseEntity<>(new HashMap<>() {{
-            put("message", "Profile was successfully updated!");
-        }}, HttpStatus.OK);
+        profileService.updateProfile(request, response, user, updateProfileDto);
+        logger.info("User's {} profile has been updated", user.getUsername());
     }
 }

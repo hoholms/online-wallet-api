@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 public class TransactionsCategoryDtoConverter {
     public TransactionsCategory fromDto(TransactionsCategoryDto categoryDto) {
         return TransactionsCategory.builder()
-                .id(categoryDto.getId())
                 .category(categoryDto.getCategory())
                 .isIncome(categoryDto.getIsIncome())
                 .build();

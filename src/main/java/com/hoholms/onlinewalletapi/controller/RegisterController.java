@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,20 +19,13 @@ public class RegisterController {
     private final RegisterService registerService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> addUser(
-            @RequestBody @Valid RegisterDto registerDto,
-            BindingResult bindingResult
+    public void addUser(
+            @RequestBody @Valid RegisterDto registerDto
     ) {
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ControllerUtils.getErrors(bindingResult));
-        }
-
         registerService.registerUser(registerDto);
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @PutMapping("/activate/{code}")
+    @DeleteMapping("/activate/{code}")
     public ResponseEntity<String> activate(@PathVariable String code) {
         boolean isActivated = profileService.activateProfile(code);
 

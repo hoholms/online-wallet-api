@@ -17,12 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/transactions")
@@ -49,15 +47,9 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<Object> addTransaction(
             @AuthenticationPrincipal User user,
-            @RequestBody @Valid TransactionDto transactionDto,
-            BindingResult bindingResult
+            @RequestBody @Valid TransactionDto transactionDto
     ) {
         Profile currentProfile = profileService.findProfileByUser(user);
-
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
-            return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
-        }
 
         Transaction transaction = transactionDtoConverter.fromDto(transactionDto, currentProfile);
         transactionService.add(transaction, currentProfile);
@@ -95,16 +87,10 @@ public class TransactionController {
     public ResponseEntity<Object> transactionSave(
             @AuthenticationPrincipal User user,
             @PathVariable Long transactionID,
-            @RequestBody @Valid TransactionDto transactionDto,
-            BindingResult bindingResult
+            @RequestBody @Valid TransactionDto transactionDto
     ) {
-        if (bindingResult.hasErrors()) {
-            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
-            return new ResponseEntity<>(errorsMap, HttpStatus.BAD_REQUEST);
-        } else {
-            transactionService.save(user, transactionID, transactionDto);
-            logger.info("Saved transaction by id {}", transactionID);
-        }
+        transactionService.save(user, transactionID, transactionDto);
+        logger.info("Saved transaction by id {}", transactionID);
 
         return new ResponseEntity<>(transactionWithIdDtoConverter.toDto(transactionService.findTransactionById(transactionID)), HttpStatus.OK);
     }
