@@ -96,16 +96,18 @@ public class StatisticsService {
     public List<CircleStatistics> findCircleStatistics(User user) {
         Profile currentProfile = profileService.findProfileByUser(user);
 
+        LocalDate defaultDate = LocalDate.parse("1970-01-01");
         DateWithLabel from = new DateWithLabel(currentProfile.getTransactions()
                 .stream()
                 .sorted(Comparator.comparing(Transaction::getTransactionDate))
                 .reduce((first, second) -> first)
-                .orElse(null)
-                .getTransactionDate());
+                .map(Transaction::getTransactionDate)
+                .orElse(defaultDate));
         DateWithLabel to = new DateWithLabel(LocalDate.now());
 
         return getCircleStatistics(currentProfile, from, to);
     }
+
 
     public List<CircleStatistics> findCircleStatistics(User user, DateWithLabel from, DateWithLabel to) {
         Profile currentProfile = profileService.findProfileByUser(user);

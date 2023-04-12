@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/profile")
+@RequestMapping("/api/profile")
 public class ProfileController {
     private static final Logger logger = LoggerFactory.getLogger(ProfileController.class);
     private final ProfileService profileService;
@@ -29,7 +29,7 @@ public class ProfileController {
     }
 
     @PutMapping
-    public void updateProfile(
+    public ResponseEntity<Void> updateProfile(
             HttpServletRequest request,
             HttpServletResponse response,
             @AuthenticationPrincipal User user,
@@ -37,5 +37,6 @@ public class ProfileController {
     ) {
         profileService.updateProfile(request, response, user, updateProfileDto);
         logger.info("User's {} profile has been updated", user.getUsername());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

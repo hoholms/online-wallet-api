@@ -13,29 +13,31 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/register")
 public class RegisterController {
     private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
     private final ProfileService profileService;
     private final RegisterService registerService;
 
-    @PostMapping("/register")
-    public void addUser(
+    @PostMapping
+    public ResponseEntity<Void> registerUser(
             @RequestBody @Valid RegisterDto registerDto
     ) {
         registerService.registerUser(registerDto);
+        logger.info("User {} registered successfully", registerDto.getUsername());
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/activate/{code}")
-    public ResponseEntity<String> activate(@PathVariable String code) {
+    @PostMapping("/activate/{code}")
+    public ResponseEntity<String> activateAccount(@PathVariable String code) {
         boolean isActivated = profileService.activateProfile(code);
 
         if (isActivated) {
-            logger.info("Account is now activated");
+            logger.info("Account with activation code {} is now activated", code);
+            return new ResponseEntity<>("Your account is now activated", HttpStatus.OK);
         } else {
-            logger.warn("Account was not activated");
+            logger.warn("Account with activation code {} was not activated", code);
             return new ResponseEntity<>("Activation code not found", HttpStatus.UNAUTHORIZED);
         }
-
-        return new ResponseEntity<>("Your account is now activated", HttpStatus.OK);
     }
 }

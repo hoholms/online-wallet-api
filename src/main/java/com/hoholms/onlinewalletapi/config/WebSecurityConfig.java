@@ -26,11 +26,13 @@ public class WebSecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .exceptionHandling().accessDeniedHandler(new MyAccessDeniedHandler()).authenticationEntryPoint(new MyAuthenticationEntryPoint())
+                .exceptionHandling()
+                .accessDeniedHandler(new MyAccessDeniedHandler())
+                .authenticationEntryPoint(new MyAuthenticationEntryPoint())
                 .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/login**", "/logout**", "/register**", "/activate**").permitAll()
-                        .requestMatchers("/users/**", "/categories/edit**").hasAuthority("ADMIN")
+                        .requestMatchers("/", "/auth/**", "/api/register**").permitAll()
+                        .requestMatchers("/users/**", "/api/categories/edit**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .rememberMe()

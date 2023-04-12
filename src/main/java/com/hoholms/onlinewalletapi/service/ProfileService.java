@@ -73,34 +73,32 @@ public class ProfileService {
     }
 
     public void updateProfile(HttpServletRequest request, HttpServletResponse response, User user, UpdateProfileDto updateProfileDto) {
-        Profile currentProfile = profileRepository.findByUser(user)
-                .orElseThrow(() -> new ProfileNotFoundException(
-                        String.format("Profile for user %s not found!", user.getId())
-                ));
+        Profile currentProfile = findProfileByUser(user);
 
-        String userEmail = currentProfile.getEmail();
-        boolean isEmailChanged = (updateProfileDto.getEmail() != null && !updateProfileDto.getEmail().equals(userEmail) ||
-                userEmail != null && !userEmail.equals(updateProfileDto.getEmail()));
+        updateFirstName(currentProfile, updateProfileDto);
+        updateLastName(currentProfile, updateProfileDto);
+        updatePassword(user, updateProfileDto);
+        updateEmail(request, response, user, currentProfile, updateProfileDto);
+        updateCurrency(currentProfile, updateProfileDto);
 
-        String userFirstName = currentProfile.getFirstName();
-        boolean isFirstNameChanged = (updateProfileDto.getFirstName() != null && !updateProfileDto.getFirstName().equals(userFirstName) ||
-                userFirstName != null && !userFirstName.equals(updateProfileDto.getFirstName()));
+        userService.save(user);
+        profileRepository.save(currentProfile);
+    }
 
-        String userLastName = currentProfile.getLastName();
-        boolean isLastNameChanged = (updateProfileDto.getLastName() != null && !updateProfileDto.getLastName().equals(userLastName) ||
-                userLastName != null && !userLastName.equals(updateProfileDto.getLastName()));
-
-        boolean isPasswordChanged = !ObjectUtils.isEmpty(updateProfileDto.getNewPassword());
-
-        if (isFirstNameChanged) {
+    private void updateFirstName(Profile currentProfile, UpdateProfileDto updateProfileDto) {
+        if (isFieldValueChanged(updateProfileDto.getFirstName(), currentProfile.getFirstName())) {
             currentProfile.setFirstName(updateProfileDto.getFirstName());
         }
+    }
 
-        if (isLastNameChanged) {
+    private void updateLastName(Profile currentProfile, UpdateProfileDto updateProfileDto) {
+        if (isFieldValueChanged(updateProfileDto.getLastName(), currentProfile.getLastName())) {
             currentProfile.setLastName(updateProfileDto.getLastName());
         }
+    }
 
-        if (isPasswordChanged) {
+    private void updatePassword(User user, UpdateProfileDto updateProfileDto) {
+        if (!ObjectUtils.isEmpty(updateProfileDto.getNewPassword())) {
             if (updateProfileDto.getOldPassword() == null ||
                     !BCrypt.checkpw(updateProfileDto.getOldPassword(), user.getPassword())) {
                 throw new OldPasswordDontMatchException("Old password is incorrect");
@@ -110,18 +108,24 @@ public class ProfileService {
 
             user.setPassword(passwordEncoder.encode(updateProfileDto.getNewPassword()));
         }
+    }
 
-        if (isEmailChanged && !existsProfileByEmail(updateProfileDto.getEmail())) {
-            currentProfile.setEmail(updateProfileDto.getEmail());
-            currentProfile.setActivationCode(UUID.randomUUID().toString());
-            sendMail(currentProfile);
-            user.setEnabled(false);
-            logger.info("Profile's by id {} email has been updated", currentProfile.getId());
-        } else if (isEmailChanged && existsProfileByEmail(updateProfileDto.getEmail())) {
-            logger.error("Profile's by id {} email failed to update", currentProfile.getId());
-            throw new EmailAlreadyExistsException("Email already registered!");
+    private void updateEmail(HttpServletRequest request, HttpServletResponse response, User user, Profile currentProfile, UpdateProfileDto updateProfileDto) {
+        if (isFieldValueChanged(updateProfileDto.getEmail(), currentProfile.getEmail())) {
+            if (!existsProfileByEmail(updateProfileDto.getEmail())) {
+                updateProfileEmailAndSendMail(currentProfile, updateProfileDto);
+                user.setEnabled(false);
+                logger.info("Profile's by id {} email has been updated", currentProfile.getId());
+            } else {
+                logger.error("Profile's by id {} email failed to update", currentProfile.getId());
+                throw new EmailAlreadyExistsException("Email already registered!");
+            }
+
+            logoutAuthenticatedUser(request, response);
         }
+    }
 
+    private void updateCurrency(Profile currentProfile, UpdateProfileDto updateProfileDto) {
         if (updateProfileDto.getCurrency() != null && !currentProfile.getCurrency().equals(updateProfileDto.getCurrency())) {
             try {
                 Currency.valueOf(updateProfileDto.getCurrency().toUpperCase());
@@ -130,17 +134,25 @@ public class ProfileService {
                 throw new InvalidCurrencyException("Please provide an EXISTING currency");
             }
         }
+    }
 
-        userService.save(user);
-        profileRepository.save(currentProfile);
+    private boolean isFieldValueChanged(String newValue, String oldValue) {
+        return (newValue != null && !newValue.equals(oldValue) || oldValue != null && !oldValue.equals(newValue));
+    }
 
-        if (isEmailChanged || isPasswordChanged) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            if (auth != null) {
-                new SecurityContextLogoutHandler().logout(request, response, auth);
-            }
+    private void updateProfileEmailAndSendMail(Profile currentProfile, UpdateProfileDto updateProfileDto) {
+        currentProfile.setEmail(updateProfileDto.getEmail());
+        currentProfile.setActivationCode(UUID.randomUUID().toString());
+        sendMail(currentProfile);
+    }
+
+    private void logoutAuthenticatedUser(HttpServletRequest request, HttpServletResponse response) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
         }
     }
+
 
     public void calcBalance(User user) {
         profileRepository.calcBalance(findProfileByUser(user).getId());

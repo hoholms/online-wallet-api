@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Comparator;
@@ -33,7 +32,7 @@ public class TransactionController {
     private final TransactionWithIdDtoConverter transactionWithIdDtoConverter;
 
     @GetMapping
-    private ResponseEntity<List<TransactionWithIdDto>> getTransactions(@AuthenticationPrincipal User user) {
+    public ResponseEntity<List<TransactionWithIdDto>> getTransactions(@AuthenticationPrincipal User user) {
         logger.info("Dashboard transactions info call by user id {}", user.getId());
         Profile currentProfile = profileService.findProfileByUser(user);
         return new ResponseEntity<>(currentProfile.getTransactions()
@@ -63,8 +62,7 @@ public class TransactionController {
     @GetMapping("{transactionID}")
     public ResponseEntity<TransactionWithIdDto> transactionEditForm(
             @AuthenticationPrincipal User user,
-            @PathVariable Long transactionID,
-            Model model
+            @PathVariable Long transactionID
     ) {
         logger.info("Call for transaction with id: {} info page", transactionID);
 

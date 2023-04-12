@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -100,18 +97,15 @@ public class TransactionService {
     ) {
         Map<TransactionsCategory, BigDecimal> sumMap = ControllerUtils.getCategoriesSumMap(profile, isIncome, from, to);
 
-        if (sumMap.size() == 0) {
-            return Pair.of("nothing", BigDecimal.ZERO);
-        }
+        Optional<Map.Entry<TransactionsCategory, BigDecimal>> maxEntryOptional = sumMap.entrySet().stream()
+                .max(Comparator.comparing(Map.Entry::getValue));
 
-        Map.Entry<TransactionsCategory, BigDecimal> maxEntry = null;
-        for (Map.Entry<TransactionsCategory, BigDecimal> entry : sumMap.entrySet()) {
-            if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0) {
-                maxEntry = entry;
-            }
+        if (maxEntryOptional.isPresent()) {
+            Map.Entry<TransactionsCategory, BigDecimal> maxEntry = maxEntryOptional.get();
+            return Pair.of(maxEntry.getKey().getCategory(), maxEntry.getValue());
+        } else {
+            return Pair.of("Nothing", BigDecimal.ZERO);
         }
-
-        return Pair.of(maxEntry.getKey().getCategory(), maxEntry.getValue());
     }
 
     public CircleStatistics findCategoryAndSumByProfileAndIsIncome(Profile profile, Boolean isIncome) {
@@ -128,7 +122,6 @@ public class TransactionService {
         );
     }
 
-    // TODO Fix future dates
     public List<DateWithLabel> findTransactionsDatesWithLabels(User user) {
         Profile profile = profileService.findProfileByUser(user);
 

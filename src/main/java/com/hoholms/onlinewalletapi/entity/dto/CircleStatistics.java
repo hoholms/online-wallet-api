@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Transient
 @Getter
@@ -26,12 +25,12 @@ public class CircleStatistics {
                 .stream()
                 .sorted(Comparator.comparing(Map.Entry<TransactionsCategory, BigDecimal>::getValue).reversed())
                 .map(entry -> entry.getKey().getCategory())
-                .collect(Collectors.toList());
+                .toList();
 
         values = categoriesSumMap.entrySet()
                 .stream()
                 .sorted(Comparator.comparing(Map.Entry<TransactionsCategory, BigDecimal>::getValue).reversed())
                 .map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

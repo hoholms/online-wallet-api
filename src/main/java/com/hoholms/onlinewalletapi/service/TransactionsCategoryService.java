@@ -15,6 +15,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class TransactionsCategoryService {
+
+    private static final String TRANSACTION_CATEGORY_NOT_FOUND_MESSAGE = "Transaction category not found!";
+
     private final TransactionsCategoryRepository categoryRepository;
 
     private final TransactionService transactionService;
@@ -34,12 +37,12 @@ public class TransactionsCategoryService {
 
     public TransactionsCategory findByCategory(String category) {
         return categoryRepository.findByCategory(category)
-                .orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!"));
+                .orElseThrow(() -> new TransactionCategoryNotFoundException(TRANSACTION_CATEGORY_NOT_FOUND_MESSAGE));
     }
 
     public TransactionsCategory findByCategoryAndIsIncome(String category, boolean isIncome) {
         return categoryRepository.findByCategoryAndIsIncome(category, isIncome)
-                .orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!"));
+                .orElseThrow(() -> new TransactionCategoryNotFoundException(TRANSACTION_CATEGORY_NOT_FOUND_MESSAGE));
     }
 
     public List<TransactionsCategory> findByIsIncome(boolean isIncome) {
@@ -66,7 +69,7 @@ public class TransactionsCategoryService {
     }
 
     public TransactionsCategory findById(Long categoryID) {
-        return categoryRepository.findById(categoryID).orElseThrow(() -> new TransactionCategoryNotFoundException("Transaction category not found!"));
+        return categoryRepository.findById(categoryID).orElseThrow(() -> new TransactionCategoryNotFoundException(TRANSACTION_CATEGORY_NOT_FOUND_MESSAGE));
     }
 
     public void addCategory(String category, Boolean isIncome) {
