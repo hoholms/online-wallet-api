@@ -31,7 +31,7 @@ public class WebSecurityConfig {
                 .authenticationEntryPoint(new MyAuthenticationEntryPoint())
                 .and()
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/", "/auth/**", "/api/register**").permitAll()
+                        .requestMatchers("/", "/auth/**", "/api/register**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/users/**", "/api/categories/edit**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -39,7 +39,8 @@ public class WebSecurityConfig {
                 .and()
                 .logout()
                 .logoutUrl("/login?logout")
-                .logoutSuccessUrl("/login");
+                .logoutSuccessUrl("/login")
+                .and();
 
         return http.build();
     }
